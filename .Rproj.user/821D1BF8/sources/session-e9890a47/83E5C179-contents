@@ -1,0 +1,104 @@
+# Test the Daymet endpoint without following redirects
+url <- sprintf(DAYMET_NCSS, 2000)
+
+q <- list(
+  var = "prcp",
+  north = "39.0",
+  west = "-77.2",
+  east = "-76.8",
+  south = "38.7",
+  disableProjSubset = "on",
+  horizStride = 1,
+  time_start = "2000-01-01T12:00:00Z",
+  time_end = "2000-01-01T12:00:00Z",
+  timeStride = 1,
+  accept = "netcdf"
+)
+
+test <- httr::GET(
+  url,
+  query = q,
+  httr::timeout(60),
+  httr::user_agent("DCFloodR diagnostic"),
+  httr::config(followlocation = FALSE)
+)
+
+cat("HTTP status:", httr::status_code(test), "\n")
+cat("Requested URL:", url, "\n")
+cat("Response URL:", test$url, "\n")
+cat("Redirect location:\n")
+print(httr::headers(test)[["location"]])
+cat("Content type:\n")
+print(httr::headers(test)[["content-type"]])
+
+
+redirect_url <- httr::headers(test)[["location"]]
+
+direct_test <- httr::GET(
+  redirect_url,
+  httr::timeout(60),
+  httr::user_agent("DCFloodR diagnostic"),
+  httr::config(followlocation = FALSE)
+)
+
+cat("HTTP status:", httr::status_code(direct_test), "\n")
+cat("Response URL:", direct_test$url, "\n")
+cat("Redirect location:\n")
+print(httr::headers(direct_test)[["location"]])
+
+cat("Response preview:\n")
+cat(
+  substr(
+    rawToChar(httr::content(direct_test, "raw")),
+    1, 400
+  ),
+  "\n"
+)
+
+
+netrc_path <- file.path(path.expand("~"), "_netrc")
+dotnetrc_path <- file.path(path.expand("~"), ".netrc")
+
+cat("_netrc exists:", file.exists(netrc_path), "\n")
+cat(".netrc exists:", file.exists(dotnetrc_path), "\n")
+
+
+url <- paste0(
+  "https://opendap.earthdata.nasa.gov/collections/",
+  "C2532426483-ORNL_CLOUD/granules/",
+  "Daymet_Daily_V4R1.daymet_v4_daily_na_prcp_2000.nc.dmr"
+)
+
+test_access <- httr::HEAD(
+  url,
+  httr::timeout(30),
+  httr::user_agent("DCFloodR diagnostic")
+)
+
+cat("HTTP status:", httr::status_code(test_access), "\n")
+cat("Response URL:", test_access$url, "\n")
+cat("Content type:", httr::headers(test_access)[["content-type"]], "\n")
+
+
+test_pixel <- httr::GET(
+  "https://daymet.ornl.gov/single-pixel/api/data",
+  query = list(
+    lat = 38.9,
+    lon = -77.0,
+    vars = "prcp",
+    start = "2000-01-01",
+    end = "2000-01-01"
+  ),
+  httr::timeout(30),
+  httr::user_agent("DCFloodR diagnostic")
+)
+
+cat("HTTP status:", httr::status_code(test_pixel), "\n")
+cat("Response URL:", test_pixel$url, "\n")
+
+if (httr::status_code(test_pixel) == 200) {
+  cat(substr(
+    rawToChar(httr::content(test_pixel, "raw")),
+    1, 800
+  ))
+}

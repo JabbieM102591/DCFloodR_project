@@ -1,0 +1,26 @@
+{
+    "id": "18779C24",
+    "path": "C:/Users/User/Downloads/DCFloodR_project/DCFloodR/step5_in_dc_precip.R",
+    "project_path": "DCFloodR/step5_in_dc_precip.R",
+    "type": "r_source",
+    "hash": "740482622",
+    "contents": "",
+    "dirty": false,
+    "created": 1792296171873.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "130,165",
+        "scrollLine": "115"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1792325726,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1792325726848,
+    "read_only": false,
+    "read_only_alternatives": []
+}

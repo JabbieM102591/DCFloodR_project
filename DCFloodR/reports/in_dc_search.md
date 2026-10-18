@@ -1,0 +1,104 @@
+# Independent search: precipitation stations inside Washington, DC
+
+## Search strategy
+
+1. NOAA GHCN-Daily station list and inventory (includes CoCoRaHS volunteer gauges and NWS cooperative stations), filtered to the DC bounding box and then to the DC outline (point-in-polygon).
+2. USGS site catalogue: sites in the DC box reporting precipitation (parameter 00045).
+3. Airports (DCA, IAD, BWI) are outside DC and are not counted as in-DC stations.
+
+DC outline used: OpenStreetMap Nominatim polygon for the District of Columbia, retrieved 2026-10-18T01:08:54Z
+
+## Results
+
+- GHCN-Daily: 133039 stations worldwide read; 72 have PRCP records inside the DC bounding box; 26 of them are inside the DC outline.
+
+### All PRCP stations found in the DC bounding box
+
+| station | name | lat | lon | state label | years of record | inside DC outline |
+|---|---|---|---|---|---|---|
+| US1DCDC0001 | WASHINGTON 3.0 ENE | 38.9171 | -76.9626 | DC | 2006-2006 | yes |
+| US1DCDC0002 | WASHINGTON 3.7 NNW | 38.9574 | -77.0337 | DC | 2006-2007 | yes |
+| US1DCDC0003 | WASHINGTON 5.0 WNW | 38.9377 | -77.0991 | DC | 2006-2006 | yes |
+| US1DCDC0006 | WASHINGTON 2.0 ESE | 38.8928 | -76.9834 | DC | 2007-2007 | yes |
+| US1DCDC0007 | WASHINGTON 1.2 SE | 38.8943 | -76.9982 | DC | 2007-2007 | yes |
+| US1DCDC0008 | WASHINGTON 2.0 ESE | 38.8901 | -76.9854 | DC | 2007-2008 | yes |
+| US1DCDC0009 | WASHINGTON 2.0 SSW | 38.8766 | -77.0224 | DC | 2008-2026 | yes |
+| US1DCDC0010 | WASHINGTON 5.0 N | 38.9773 | -77.0245 | DC | 2008-2018 | yes |
+| US1DCDC0011 | WASHINGTON 4.0 WNW | 38.9303 | -77.0831 | DC | 2008-2010 | yes |
+| US1DCDC0014 | WASHINGTON 5.1 NW | 38.9581 | -77.0817 | DC | 2011-2026 | yes |
+| US1DCDC0015 | WASHINGTON 1.9 WNW | 38.9203 | -77.0456 | DC | 2011-2020 | yes |
+| US1DCDC0019 | THE WHITE HOUSE | 38.8958 | -77.0370 | DC | 2015-2018 | yes |
+| US1DCDC0026 | WASHINGTON 2.6 NE | 38.9327 | -76.9835 | DC | 2018-2026 | yes |
+| US1DCDC0031 | WASHINGTON 3.1 NNE | 38.9436 | -76.9880 | DC | 2020-2026 | yes |
+| US1DCDC0034 | WASHINGTON 1.9 NW | 38.9258 | -77.0408 | DC | 2018-2023 | yes |
+| US1DCDC0040 | WASHINGTON 2.2 ESE | 38.8965 | -76.9769 | DC | 2022-2026 | yes |
+| US1DCDC0043 | WASHINGTON 0.9 ESE | 38.9023 | -77.0002 | DC | 2024-2026 | yes |
+| US1DCDC0044 | WASHINGTON 2.4 N | 38.9391 | -77.0101 | DC | 2025-2026 | yes |
+| US1DCDC0045 | WASHINGTON 2.0 NNW | 38.9338 | -77.0241 | DC | 2025-2026 | yes |
+| US1MDMG0038 | BETHESDA 0.3 NNE | 38.9945 | -77.1184 | MD | 2006-2006 | NO |
+| US1MDMG0042 | TAKOMA PARK 0.6 NNW | 38.9902 | -77.0081 | MD | 2006-2026 | NO |
+| US1MDMG0070 | SILVER SPRING 1.9 SSE | 38.9893 | -77.0088 | MD | 2011-2017 | NO |
+| US1MDMG0145 | CHEVY CHASE 1.2 SW | 38.9832 | -77.0887 | MD | 2022-2026 | NO |
+| US1MDMG0152 | CHEVY CHASE 1.2 SW | 38.9823 | -77.0881 | MD | 2023-2026 | NO |
+| US1MDPG0002 | CAMP SPRINGS 1.3 N | 38.8228 | -76.9178 | MD | 2005-2011 | NO |
+| US1MDPG0007 | CAMP SPRINGS 1.6 NNW | 38.8257 | -76.9266 | MD | 2005-2016 | NO |
+| US1MDPG0008 | CAMP SPRINGS 0.1 ESE | 38.8028 | -76.9185 | MD | 2005-2014 | NO |
+| US1MDPG0011 | ADELPHI 0.6 SSE | 38.9939 | -76.9601 | MD | 2006-2006 | NO |
+| US1MDPG0023 | OXON HILL-GLASSMANOR 0.8 W | 38.7959 | -76.9899 | MD | 2006-2006 | NO |
+| US1MDPG0024 | FOREST HEIGHTS 1.6 SE | 38.7926 | -76.9791 | MD | 2006-2014 | NO |
+| US1MDPG0034 | HYATTSVILLE 0.4 S | 38.9533 | -76.9546 | MD | 2006-2007 | NO |
+| US1MDPG0043 | SUITLAND 2.1 SE | 38.8224 | -76.9064 | MD | 2009-2026 | NO |
+| US1MDPG0079 | HYATTSVILLE 0.7 N | 38.9689 | -76.9526 | MD | 2015-2026 | NO |
+| US1MDPG0090 | COLLEGE PARK 0.9 S | 38.9824 | -76.9342 | MD | 2019-2020 | NO |
+| US1MDPG0094 | BRENTWOOD 0.4 NW | 38.9479 | -76.9620 | MD | 2020-2024 | NO |
+| US1VAALC003 | ALEXANDRIA 1.8 S | 38.7952 | -77.0849 | VA | 2008-2010 | NO |
+| US1VAALC007 | ALEXANDRIA 0.7 S | 38.8104 | -77.0866 | VA | 2019-2026 | NO |
+| US1VAALC010 | ALEXANDRIA 1.6 W | 38.8177 | -77.1161 | VA | 2021-2026 | NO |
+| US1VAALC011 | ALEXANDRIA 1.2 W | 38.8229 | -77.1091 | VA | 2022-2026 | NO |
+| US1VAAR0005 | ALEXANDRIA 2.4 NE | 38.8554 | -77.0698 | VA | 2006-2010 | NO |
+| US1VAAR0006 | ARLINGTON 1.1 NW | 38.8879 | -77.1176 | VA | 2007-2010 | NO |
+| US1VAAR0008 | ARLINGTON 0.3 E | 38.8791 | -77.0967 | VA | 2014-2026 | NO |
+| US1VAAR0017 | HUNTINGTON 1.6 ENE | 38.7986 | -77.0431 | VA | 2021-2025 | NO |
+| US1VAAR0018 | ARLINGTON 1.0 WSW | 38.8719 | -77.1190 | VA | 2021-2026 | NO |
+| US1VAFX0117 | ALEXANDRIA 1.4 N | 38.8404 | -77.0819 | VA | 2022-2026 | NO |
+| USC00180795 | BETHESDA | 38.9667 | -77.1167 | MD | 1945-1951 | NO |
+| USC00181135 | BRIGHTWOOD DC | 38.9500 | -77.0167 | MD | 1944-1956 | yes |
+| USC00181170 | BROOKDALE | 38.9500 | -77.1000 | MD | 1945-1973 | NO |
+| USC00181180 | BROOKSIDE MANOR | 38.9667 | -76.9667 | MD | 1945-1953 | NO |
+| USC00181995 | COLLEGE PARK | 38.9833 | -76.9500 | MD | 1894-1996 | NO |
+| USC00182325 | DALECARLIA RSVR | 38.9386 | -77.1133 | MD | 1948-2026 | yes |
+| USC00182585 | DISTRICT HEIGHTS | 38.8500 | -76.9000 | MD | 1945-1957 | NO |
+| USC00186350 | NATL ARBORETUM DC | 38.9133 | -76.9700 | MD | 1948-2026 | yes |
+| USC00186800 | OXON HILL | 38.7956 | -76.9947 | MD | 2002-2021 | NO |
+| USC00187615 | RIVERDALE | 38.9667 | -76.9333 | MD | 1946-1955 | NO |
+| USC00188289 | SILVER HILL OBSY | 38.8333 | -76.9500 | MD | 1951-1953 | NO |
+| USC00188656 | SUITLAND | 38.8500 | -76.9333 | MD | 1962-1974 | NO |
+| USC00188715 | TAKOMA PARK # 1 | 38.9833 | -77.0167 | MD | 1899-1949 | NO |
+| USC00188720 | TAKOMA PARK BALT AVE | 38.9833 | -77.0167 | MD | 1948-1949 | NO |
+| USC00188725 | TAKOMA PARK MISS AVE | 38.9833 | -77.0000 | MD | 1945-1961 | NO |
+| USC00189035 | US SOLDIERS HOME DC | 38.9333 | -77.0167 | MD | 1948-1977 | yes |
+| USC00189674 | GEORGETOWN | 38.9072 | -77.0522 | DC | 1860-1866 | yes |
+| USC00440090 | ALEXANDRIA CITY GARAGE | 38.8000 | -77.0833 | VA | 1958-1975 | NO |
+| USC00440097 | ALEXANDRIA POTOMAC YAR | 38.8167 | -77.0500 | VA | 1893-1962 | NO |
+| USC00440449 | BARCROFT | 38.8667 | -77.1000 | VA | 1945-1949 | NO |
+| USC00441729 | CLARENDON LYON PARK | 38.9000 | -77.0833 | VA | 1925-1962 | NO |
+| USC00442809 | EPISCOPAL HIGH SCHOOL | 38.8167 | -77.1000 | VA | 1945-1957 | NO |
+| USC00448938 | WAVERLY HILLS | 38.8833 | -77.1167 | VA | 1945-1970 | NO |
+| USW00013710 | WASHINGTON DC BOLLING FLD AFB | 38.8333 | -77.0167 | MD | 1947-1956 | yes |
+| USW00013743 | WASHINGTON REAGAN NATL AP | 38.8472 | -77.0344 | VA | 1941-2026 | NO |
+| USW00013751 | ANACOSTIA NAS | 38.8500 | -77.0333 | MD | 1945-1956 | NO |
+| USW00093725 | WASHINGTON | 38.9053 | -77.0525 | DC | 1852-1965 | yes |
+
+Stations inside DC whose record period covers at least one event year: 12 (at most 12 are downloaded).
+
+### USGS precipitation sites (parameter 00045) in the DC box
+
+- 01652500: FOURMILE RUN AT ALEXANDRIA, VA (38.8433333, -77.0858611) inside DC outline: no
+
+## Limitations
+
+- A station is 'inside DC' only if its published coordinates fall inside the outline; coordinates can be rounded.
+- Volunteer (CoCoRaHS) gauges are not quality-assured to the same standard as airport instruments.
+- Many in-DC gauges report one daily total at a fixed observation hour, so they cannot resolve the timing of a short urban flood.
+- Sources such as DC Water, Weather Underground personal stations or MADIS/Synoptic were not accessed automatically (licence terms or API tokens); see the manual checklist in the README.
+
