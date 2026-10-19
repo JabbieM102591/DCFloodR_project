@@ -1,0 +1,8 @@
+.Rproj.user/
+.Rhistory
+.RData
+.Renviron
+.env
+*.token
+data/interim/
+*.zip

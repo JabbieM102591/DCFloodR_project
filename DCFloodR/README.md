@@ -1,116 +1,228 @@
-# DC flood events: one reproducible HDF5 database
+# DC Flood Events: One Reproducible HDF5 Database
 
-STAT 6289, individual project, assignment version 4. Factor A is Daymet gridded precipitation and Factor B is water-level gauges inside DC (GW ID 41452795).
+**Course:** STAT 6289  
+**Project:** Individual Project - Assignment Version 4  
+**Factor A:** Daymet Gridded Precipitation  
+**Factor B:** Water-Level Gauges Inside Washington, DC (GW ID 41452795)
 
-I read the instructor's list of 125 flood events (`data/input/DC_flood_times.csv`, 1996 to 2025, never modified). For every event I download Daymet precipitation rasters and gauge records for a window around the event, store everything in one HDF5 file, and provide R functions that read and plot straight from that file. Everything is written in R and uses public APIs only.
+## Project Overview
 
-## 1. How to reproduce
+For this project, I developed an R workflow to study the 125 flood events provided by my instructor, covering 1996–2025. The original event file, `data/input/DC_flood_times.csv`, was not modified.
 
-I used R 4.6.1 on Windows with RStudio. R 4.1 or newer should work.
+I retrieved Daymet precipitation data and available water-level gauge observations for each event. I organized the data into a single HDF5 database and developed reusable R functions to read, summarize, and plot the results.
 
-1. Clone this repository and open `DCFloodR.Rproj` in RStudio. This sets the working directory to the project folder.
-2. Daymet is now served by NASA Earthdata, so a free Earthdata account is needed (https://urs.earthdata.nasa.gov). Approve the ORNL DAAC application once under Applications, Authorized Apps. The login is never written to a file; I type it into the Console each session:
+The project uses R and publicly available data sources and APIs.
+
+## 1. How to Run the Project
+
+I developed and tested the workflow using R 4.6.1 on Windows with RStudio. R 4.1 or later may work, depending on package and API compatibility.
+
+**Setup**
+
+1. Clone the repository and open `DCFloodR.Rproj` in RStudio.
+2. Create a NASA Earthdata account at https://urs.earthdata.nasa.gov/ and authorize the required ORNL DAAC application for Daymet access.
+3. Set your Earthdata credentials in the RStudio Console:
+
+   ```r
+   Sys.setenv(
+     EARTHDATA_USER = "my_username",
+     EARTHDATA_PASS = "my_password"
+   )
+   ```
+
+   Replace the example values with your credentials. Do not save passwords in project files or commit them to the repository.
+
+4. Install the required packages and run the workflow:
+
+   ```r
+   source("install_packages.R")
+   source("run_all.R")
+   ```
+
+I can also run the scripts individually, from `step1_events.R` through `step8_demo.R`. Downloads are cached in `data/interim/` and reused on subsequent runs. Project settings are defined in `config.R`.
+
+If needed, a USGS API key can be supplied through the `USGS_API_KEY` environment variable.
+
+## 2. Repository Structure
+
+- `config.R` - Project settings and data-source descriptions.
+- `R/utils.R` - Utility functions, logging, and time helpers.
+- `R/fetchers.R` - Data retrieval and parsing functions.
+- `R/setup.R` — Project setup functions.
+- `step1_events.R` - Validates events and creates analysis windows.
+- `step2_boundary.R` - Retrieves the DC boundary for mapping and spatial checks.
+- `step3_daymet.R` - Retrieves and processes Daymet precipitation data.
+- `step4_gauges.R` - Retrieves USGS and NOAA CO-OPS gauge observations.
+- `step5_in_dc_precip.R` - Searches for precipitation stations inside DC.
+- `step6_nasa.R` — Searches for NASA OPERA surface-water scenes.
+- `step7_build_h5.R` - Builds the HDF5 database.
+- `dcflood_h5.R` - Provides functions for reading, summarizing, and plotting database contents.
+- `step8_demo.R` - Demonstrates the database functions and generates reports.
+- `data/input/` - Original input data.
+- `data/interim/` - Cached downloads and intermediate data.
+- `data/output/` - Final HDF5 database.
+- `reports/` - Validation reports, search results, and availability tables.
+- `figures/` - Maps, time-series plots, and coverage heat maps.
+
+## 3. Data Sources
+
+- **Daymet:** ORNL DAAC Daymet Daily V4 R1, DOI: https://doi.org/10.3334/ORNLDAAC/2129. Daily precipitation at approximately 1 km resolution, accessed through NASA Earthdata OPeNDAP. Units: mm/day.
+- **USGS:** Water Data OGC API, with the legacy Water Services API as a fallback. Gage height and related observations are stored separately from streamflow.
+- **NOAA CO-OPS:** Water-level observations from station `8594900`, using six-minute measurements where available and hourly data as a fallback.
+- **NOAA GHCN-Daily and USGS precipitation:** Used to search independently for precipitation observations at stations inside DC, including USGS parameter `00045`.
+- **DC boundary:** OpenStreetMap Nominatim-derived geographic information used for mapping and spatial checks.
+- **NASA OPERA:** NASA Common Metadata Repository (CMR), used to search for OPERA Level-3 Dynamic Surface Water Extent (`OPERA_L3_DSWX`) scenes. I searched scene metadata but did not download or analyse imagery.
+
+## 4. Methods and Data Conventions
+
+### Event times
+
+The original event file does not specify a time zone. I interpreted event times as Washington, DC, local time (EST/EDT) and stored corresponding UTC timestamps.
+
+Each analysis window extends from 24 hours before an event begins to 24 hours after it ends. Overlapping events remain separate records.
+
+EV031, dated April 3, 2005, at 02:10, falls within the hour skipped when daylight saving time began. I interpreted it as standard time (03:10 on the daylight-saving clock) and documented this decision in `reports/events_validation.md`.
+
+The instructor's list contains no events in 2000 or 2002. I retained the original event list without adding events for those years.
+
+### Daymet precipitation
+
+I retained the native Daymet grid without resampling. The extracted area covers DC with a 0.05-degree margin and contains 40 × 36 grid cells.
+
+Each daily layer is timestamped at 12:00 UTC and represents a UTC day. Daymet uses a 365-day calendar, so December 31 is unavailable in leap years. I recorded these dates as missing, together with the reason.
+
+### Gauge observations
+
+I checked gauge coordinates against the DC boundary and retained the units, timestamps, sampling intervals, and available quality information for each series.
+
+Gage height, tidal water level, and streamflow are treated as separate variables.
+
+### Missing values and coverage
+
+I never replaced missing observations with zero. For each event window and series, the database records expected, valid, zero, flagged, and missing observation counts, along with the longest gap.
+
+Daymet and GHCN-Daily provide daily precipitation totals, while gauge observations are instantaneous or interval-based. Each source retains its own time axis, and incompatible time resolutions are not silently combined.
+
+## 5. HDF5 Database
+
+**File:** `data/output/dc_flood_database.h5`  
+**Approximate size:** 64 MB in my reported run.
+
+The database contains the following groups:
+
+```text
+/events
+/rasters/daymet_prcp_1km
+/timeseries/<source>/<station>__<variable>
+/context/dc_boundary
+/nasa/granules
+/metadata
+```
+
+The groups store event information, precipitation arrays, gauge time series, DC boundary geometry, NASA scene metadata, and database metadata.
+
+I used chunked datasets and gzip level 4 compression. The relevant groups and datasets include attributes describing units, data sources, time conventions, and missing-value rules.
+
+The database can also be opened in Python using the `h5py` package.
+
+## 6. Reading and Plotting the Database
+
+Load the database functions and specify the file path:
+
 ```r
-Sys.setenv(EARTHDATA_USER = "my_username", EARTHDATA_PASS = "my_password")
+source("dcflood_h5.R")
+
+h5 <- "data/output/dc_flood_database.h5"
+
+list_events(h5)
+list_sources(h5)
+list_stations(h5)
+list_variables(h5)
+date_ranges(h5)
+describe(h5)
 ```
-3. Install packages once and run the steps:
-```r
-source("install_packages.R")   # httr, jsonlite, ncdf4, hdf5r, ggplot2
-source("run_all.R")            # steps 1 to 8 in order
-```
-The steps can also be run one at a time, `source("step1_events.R")` through `source("step8_demo.R")`. Downloads are cached in `data/interim/`, so a repeat run only fetches what is missing. Settings (window length, bounding box, station limits) are in `config.R`. A USGS API key is optional; if I use one it goes in the environment variable `USGS_API_KEY`, never in a file. Most of the run time is waiting for the servers.
 
-## 2. Files
-
-| file | purpose |
-|---|---|
-| `config.R` | all settings and the source descriptions written into the HDF5 file |
-| `R/utils.R`, `R/fetchers.R`, `R/setup.R` | HTTP with retries, request log, time helpers, download and parse functions |
-| `step1_events.R` | validate the event CSV, give each event an id, build analysis windows |
-| `step2_boundary.R` | DC outline (OpenStreetMap Nominatim) for maps and the inside-DC test |
-| `step3_daymet.R` | Daymet V4R1 daily precipitation, 1 km, cut to DC through NASA Earthdata OPeNDAP |
-| `step4_gauges.R` | water-level gauges inside DC: USGS (Water Data OGC API, legacy service as fallback) and NOAA CO-OPS |
-| `step5_in_dc_precip.R` | independent search for rain stations physically inside DC (GHCN-Daily, USGS) |
-| `step6_nasa.R` | extra credit: NASA OPERA surface-water scene search through CMR |
-| `step7_build_h5.R` | build `data/output/dc_flood_database.h5` and the availability tables |
-| `dcflood_h5.R` | reusable functions that read and plot from the HDF5 file |
-| `step8_demo.R` | demonstration on one event, figures, `reports/availability_report.md` |
-| `reports/` | validation, gauge search, in-DC search, NASA search, availability report, CSV tables |
-| `figures/` | maps, time series and the coverage heat map |
-
-## 3. Data sources
-
-| data | source | notes |
-|---|---|---|
-| Daymet daily precipitation | ORNL DAAC Daymet Daily V4R1, doi:10.3334/ORNLDAAC/2129, read through NASA Earthdata OPeNDAP (collection C2532426483-ORNL_CLOUD) | 1 km, Lambert Conformal Conic, mm/day |
-| USGS water level | USGS Water Data OGC API (`/collections/continuous`, `/daily`); fallback `waterservices.usgs.gov` | gage height and related water-level variables in ft, kept separate from streamflow |
-| NOAA tide gauge | CO-OPS Data API, station 8594900 (Washington, DC) | 6-minute water level in metres; hourly fallback |
-| Stations inside DC | NOAA GHCN-Daily (station list, inventory, station history files), USGS parameter 00045 | point-in-polygon test against the DC outline |
-| DC outline | OpenStreetMap Nominatim (retrieval date stored in the file) | context layer only |
-| NASA (extra credit) | NASA CMR granule search, OPERA_L3_DSWX-HLS_V1 and _S1_V1 | search only; imagery needs an Earthdata login |
-
-## 4. Method and conventions
-
-* **Event times.** The CSV has no time zone, so begin and end are read as Washington local time (America/New_York, EST or EDT as in effect on that date) and also stored in UTC. Each event gets an analysis window from 24 h before its begin to 24 h after its end. Overlapping events stay as separate rows and are noted. One event (EV031, written as 2005-04-03 02:10) falls in the hour that does not exist when clocks move forward; I read it as standard time, which is 03:10 on the daylight clock, and it is flagged in `reports/events_validation.md`. The CSV has no events in 2000 or 2002; that is how the instructor's list is, not a download problem.
-* **Daymet.** The native 1 km grid is kept, with no resampling or reprojection. I take the rectangle of grid cells (in the Daymet projection) that covers the DC bounding box plus 0.05 degrees, which gives a 40 by 36 cell window. Each day is stamped 12:00 UTC and covers the UTC day, read from `time_bnds`. Daymet uses a 365-day calendar, so 31 December does not exist in leap years; such days are stored as missing with a reason. Units are mm/day. NaN means no data, never zero. A raster slice is selected by its UTC date label.
-* **Gauges.** Coordinates are checked against the DC outline. Units, time stamps (kept as published and also converted to UTC), sampling interval and quality codes are stored with each series. Gage height, tide-gauge water level and streamflow are separate variables. USGS instantaneous data exist only from about 2007 onward, so older events can only have daily values.
-* **Missing versus zero.** A missing record is never turned into 0. For every event window and series the availability table records expected, valid, zero, flagged and missing counts and the longest gap.
-* **Temporal compatibility.** Daily Daymet and GHCN values are 24 h accumulations (UTC day for Daymet, local day for GHCN-Daily), while gauge values are instants or short intervals. They are kept on their own native time axes and never merged silently.
-
-## 5. HDF5 layout (`data/output/dc_flood_database.h5`)
-
-```
-/events                              one dataset per column: ids, local and UTC begin/end, windows, status, original CSV fields
-/rasters/daymet_prcp_1km/            precip[time,y,x] (float32, gzip), lon[y,x], lat[y,x], x_proj_m, y_proj_m,
-                                     date_utc, valid_start_utc, valid_end_utc, slice_status, slice_has_data, source_file
-/timeseries/<source>/<station>__<variable>/   time_utc (epoch seconds), value, period_hours, quality, original_timestamp
-/context/dc_boundary                 DC outline
-/nasa/granules                       NASA scenes found (metadata only)
-/metadata/{sources, series, availability, retrieval_log, processing_notes}
-```
-Compression is gzip level 4 with chunking. Every group and dataset carries attributes (units, source URL, time convention, missing-value rule). The file is about 64 MB. It can also be opened from Python with `h5py.File("data/output/dc_flood_database.h5")` or in any HDF5 viewer.
-
-## 6. Reading the database
+To retrieve and plot Daymet precipitation for EV125:
 
 ```r
-source("dcflood_h5.R"); h5 <- "data/output/dc_flood_database.h5"
-list_events(h5); list_sources(h5); list_stations(h5); list_variables(h5); date_ranges(h5); describe(h5)
-r  <- get_raster(h5, "EV125", "daymet_prcp_1km", "2025-07-19")     # matrix, lon/lat, units, valid interval
-plot_raster(h5, "EV125", "daymet_prcp_1km", "2025-07-19")
-ts <- get_timeseries(h5, "noaa_coops", "8594900", "water_level_6min", event_id = "EV125")
-plot_timeseries(h5, "noaa_coops", "8594900", "water_level_6min", event_id = "EV125")
-plot_timeseries(h5, "usgs_iv", "01648000", "gage_height", event_id = "EV125")
-coverage_summary(h5, event_id = "EV125"); plot_coverage_heatmap(h5)
+get_raster(
+  h5,
+  "EV125",
+  "daymet_prcp_1km",
+  "2025-07-19"
+)
+
+plot_raster(
+  h5,
+  "EV125",
+  "daymet_prcp_1km",
+  "2025-07-19"
+)
 ```
-`step8_demo.R` runs this on EV125 (2025-07-19, 17:00 to 18:34 local), the event with the most valid observations, and writes the figures to `figures/`.
 
-## 7. What was retrieved and what is missing
+To plot water-level and gauge-height observations:
 
-All counts below are from my run; the full tables are in `reports/availability_report.md` and `reports/coverage_summary.csv`.
+```r
+plot_timeseries(
+  h5,
+  "noaa_coops",
+  "8594900",
+  "water_level_6min",
+  event_id = "EV125"
+)
 
-| source | what I got |
-|---|---|
-| Daymet 1 km precipitation | 375 of 375 needed days, so all 125 events are covered; 40 by 36 cells |
-| NOAA CO-OPS 8594900 | 60,329 six-minute water-level records, from 1996 to 2025 |
-| USGS instantaneous gage height | 01648000 (17,111 records, from 2008) and 01647600 (39,593 records, from 2010); 116 USGS sites were found inside DC, but only these two returned usable records in the event windows |
-| USGS daily values | 0 records returned |
+plot_timeseries(
+  h5,
+  "usgs_iv",
+  "01648000",
+  "gage_height",
+  event_id = "EV125"
+)
+```
 
-Limits I want to be clear about:
-* USGS instantaneous data before about 2007 do not exist, so older events have no USGS gauge data, only the NOAA tide gauge.
-* Daymet is a daily total per 1 km cell, so it cannot resolve the timing of a flood that lasted an hour or two; the gauges can, but they are single points.
-* In EV125 the in-DC rain gauges recorded 0 to 0.3 mm for 19 July while Daymet shows up to about 75 mm in the DC window. Gauge and grid values are not interchangeable, and a missing or zero gauge value does not prove it did not rain nearby.
-* The USGS daily-values requests returned nothing, so the USGS part of the database is the instantaneous series only.
+To summarize and visualize data coverage:
 
-## 8. Independent in-DC precipitation search
+```r
+coverage_summary(h5, event_id = "EV125")
+plot_coverage_heatmap(h5)
+```
 
-`reports/in_dc_search.md` lists the stations I found inside the DC outline and what I could retrieve. I searched GHCN-Daily and USGS precipitation parameter 00045. GHCN-Daily had 12 stations inside DC; 11 have data in the event windows. Two are cooperative stations (USC00182325 and USC00186350, records from 1996); the rest are volunteer CoCoRaHS gauges (US1DCDC00xx) that only start between 2008 and 2023. No USGS precipitation site inside DC was found. Daily values were taken from each station's full history file because the NCEI daily-summaries service returned errors during my run.
+The demonstration script, `step8_demo.R`, uses EV125, which occurred on July 19, 2025, from 17:00 to 18:34 local time. This event had the most valid observations in my reported run.
 
-Sources I did not query (licence terms or access tokens needed), listed so the search is documented: DC Water rain gauges, Weather Underground personal stations, MADIS and Synoptic. The airports (DCA, IAD, BWI) are outside the District and are not counted.
+## 7. Results and Limitations
 
-## 9. Extra credit (NASA)
+The following counts are from my project run. Detailed results are available in `reports/availability_report.md` and `reports/coverage_summary.csv`.
 
-`reports/nasa_search.md` and `data/interim/nasa_granules.csv` list OPERA surface-water (DSWx) scenes near each event; 441 scenes were found in my search. OPERA only exists from 2023 onward, so older events have none, and no scene for an event does not mean there was no flooding. I did not download or plot the imagery.
+- **Flood events:** All 125 events passed validation.
+- **Daymet:** All 375 required daily layers were retrieved, covering all 125 events.
+- **NOAA CO-OPS:** I stored 60,329 six-minute records from station `8594900`, spanning 1996–2025.
+- **USGS:** I identified 171 candidate sites, of which 116 were inside DC. I stored 380,238 instantaneous records, including gage height at 10 stations and NAVD88 water level at 7 stations. Daily-value requests returned no records.
+- **NASA OPERA:** I found 441 scene records. No scenes were available before 2023 in my search results.
 
-## 10. AI-use acknowledgment
+### Limitations
 
-I used Claude (Anthropic) as an assistant for planning the project, writing and debugging the R code, and drafting this README. I ran every step myself on my own computer, checked the outputs against the data, and I am responsible for the work I am submitting.
+- USGS instantaneous observations in my dataset generally begin around 2007–2008. Older events therefore have limited USGS gauge coverage and rely on other available sources, including the NOAA tide gauge.
+- Daymet provides daily precipitation totals at approximately 1 km resolution. It cannot resolve rainfall timing during a flood lasting only one or two hours. Gauge observations provide finer temporal detail but represent individual locations.
+- For EV125, the in-DC precipitation gauges recorded approximately 0–0.3 mm on July 19, while Daymet showed values reaching approximately 75 mm within the DC grid window. These measurements represent different spatial and temporal scales and should not be treated as directly interchangeable. A zero reading at one gauge does not prove that no rainfall occurred nearby.
+
+## 8. Independent Precipitation Search Inside DC
+
+I documented the search results in `reports/in_dc_search.md`.
+
+The search identified 12 GHCN-Daily stations inside DC, 11 of which had data within the event windows. Two are cooperative stations (`USC00182325` and `USC00186350`) with records dating to 1996. The remaining stations are volunteer CoCoRaHS gauges whose records begin between 2008 and 2023.
+
+I did not identify any USGS precipitation sites inside DC. Because the NOAA NCEI Daily Summaries service returned errors during my run, I used the full-history station files instead.
+
+I did not query DC Water rain gauges, Weather Underground personal stations, MADIS, or Synoptic because of access, licensing, or token requirements. I excluded Washington National Airport (DCA), Dulles (IAD), and Baltimore/Washington International (BWI) from the in-DC station count because they are outside the District.
+
+## 9. Extra Credit: NASA OPERA Search
+
+I documented the NASA search results in `reports/nasa_search.md` and `data/interim/nasa_granules.csv`.
+
+The search identified 441 OPERA surface-water scene records near the flood events. No scenes were available before 2023 in my retrieved results. The absence of a scene does not necessarily mean that flooding did not occur.
+
+I searched for scene metadata only; I did not download or analyse the imagery.
+
+## 10. AI-Use Acknowledgment
+
+I used Claude solely to help debug my R code. I completed the rest of the project myself, including project planning, data retrieval, processing, analysis, interpretation of results, and preparation of this README. I ran the code on my own computer, checked the outputs against the data, and take full responsibility for the work I am submitting.
